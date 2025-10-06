@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SmartInvest Calculator</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="brand">SmartInvest</div>
+        <nav class="nav">
+          <a href="#calculator">الحاسبة</a>
+          <a href="#about">عن الموقع</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-inner">
+          <h1>احسب نمو استثمارك بثوانٍ</h1>
+          <p>أدخل رأس المال، الإيداع الشهري، المدة، ومعدل العائد. سنعرض لك الرسم البياني والملخص الذكي.</p>
+          <a class="cta" href="#calculator">ابدأ الآن</a>
+        </div>
+      </section>
+
+      <section id="calculator" class="section container">
+        <div class="grid">
+          <div class="card form-card">
+            <h2 class="card-title">المدخلات</h2>
+            <div class="form-grid">
+              <label class="field">
+                <span>نوع السهم <span class="info"><span class="info-btn" data-tip="type">i</span><span class="tooltip">اختر بين أسهم النمو (تركيز على ارتفاع السعر) وأسهم العوائد (تركيز على التوزيعات).</span></span></span>
+                <select id="stockType">
+                  <option value="growth">أسهم النمو</option>
+                  <option value="dividend">أسهم العوائد</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>رأس المال المبدئي <span class="info"><span class="info-btn" data-tip="initial">i</span><span class="tooltip">المبلغ الذي تبدأ به الاستثمار الآن.</span></span></span>
+                <input id="initial" type="number" min="0" value="10000" />
+              </label>
+              <label class="field">
+                <span>الإيداع الشهري <span class="info"><span class="info-btn" data-tip="monthly">i</span><span class="tooltip">مبلغ تضيفه كل شهر للاستثمار.</span></span></span>
+                <input id="monthly" type="number" min="0" value="1000" />
+              </label>
+              <label class="field">
+                <span>المدة (سنوات) <span class="info"><span class="info-btn" data-tip="years">i</span><span class="tooltip">عدد السنوات التي تنوي الاستثمار خلالها.</span></span></span>
+                <input id="years" type="number" min="1" value="10" />
+              </label>
+
+              <!-- وضع أسهم النمو -->
+              <label class="field growth-only">
+                <span>معدل العائد السنوي % <span class="info"><span class="info-btn" data-tip="rate">i</span><span class="tooltip">متوسط العائد السنوي المتوقع لأسهم النمو (مركّب).</span></span></span>
+                <input id="rate" type="number" step="0.1" value="8" />
+              </label>
+
+              <!-- وضع أسهم العوائد -->
+              <label class="field dividend-only hidden">
+                <span>سعر السهم الحالي <span class="info"><span class="info-btn" data-tip="sharePrice">i</span><span class="tooltip">سعر السهم اليوم في السوق.</span></span></span>
+                <input id="sharePrice" type="number" step="0.01" placeholder="مثال: 50" />
+              </label>
+              <label class="field dividend-only hidden">
+                <span>نمو السعر السنوي % <span class="info"><span class="info-btn" data-tip="priceGrowth">i</span><span class="tooltip">متوسط ارتفاع سعر السهم سنويًا.</span></span></span>
+                <input id="rateGrowth" type="number" step="0.1" value="5" />
+              </label>
+              <label class="field dividend-only hidden">
+                <span>عائد التوزيعات السنوي % <span class="info"><span class="info-btn" data-tip="divYield">i</span><span class="tooltip">النسبة السنوية للتوزيعات النقدية بالنسبة لقيمة السهم.</span></span></span>
+                <input id="divYield" type="number" step="0.1" value="4" />
+              </label>
+              <div class="dividend-only hidden" style="margin-top:8px; padding:8px; background:var(--c-cream); border-radius:8px; font-size:12px;">
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+                  <span>حاسبة عائد التوزيعات:</span>
+                  <button id="calcDivBtn" class="btn" style="padding:4px 8px; font-size:11px;">احسب</button>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr; gap:6px;">
+                  <label style="font-size:11px;">
+                    <span>التوزيع السنوي للسهم</span>
+                    <input id="divPerShare" type="number" step="0.01" placeholder="مثال: 2.5" style="width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;" />
+                  </label>
+                </div>
+                <div id="divResult" style="margin-top:6px; font-weight:600; color:var(--c-primary);"></div>
+              </div>
+              <label class="field dividend-only hidden" style="align-items:center; grid-template-columns:auto 1fr; gap:8px;">
+                <input id="reinvest" type="checkbox" checked />
+                <span>إعادة استثمار التوزيعات <span class="info"><span class="info-btn" data-tip="reinvest">i</span><span class="tooltip">إذا كانت مفعّلة، تُضاف التوزيعات لرصيدك وتُستثمر من جديد.</span></span></span>
+              </label>
+              <label class="field">
+                <span>العملة <span class="info"><span class="info-btn" data-tip="currency">i</span><span class="tooltip">تغيير التنسيق إلى SAR أو USD أو EUR.</span></span></span>
+                <select id="currency">
+                  <option value="SAR">SAR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </label>
+            </div>
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <button id="calculateBtn" class="btn">احسب</button>
+            </div>
+          </div>
+
+          <div class="card stats-card">
+            <h2 class="card-title">النتائج</h2>
+            <div class="stats">
+              <div>
+                <div class="stat-label">القيمة النهائية</div>
+                <div id="finalBalance" class="stat-value">-</div>
+              </div>
+              <div>
+                <div class="stat-label">إجمالي الإيداعات</div>
+                <div id="totalContrib" class="stat-value">-</div>
+              </div>
+              <div class="dividend-only hidden">
+                <div class="stat-label">إجمالي التوزيعات</div>
+                <div id="totalDivs" class="stat-value">-</div>
+              </div>
+            </div>
+            <p id="summary" class="summary"></p>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <canvas id="growthChart" height="120"></canvas>
+        </div>
+
+        <div class="card table-card">
+          <div class="table-header">
+            <h3 class="card-title" style="margin:0">الملخص السنوي</h3>
+            <button id="exportCsv" class="btn">تصدير CSV</button>
+          </div>
+          <div class="table-wrapper">
+            <table id="yearlyTable">
+              <thead>
+                <tr>
+                  <th>السنة</th>
+                  <th>الإيداعات الإجمالية</th>
+                  <th class="dividend-only hidden">التوزيعات</th>
+                  <th>الرصيد بنهاية السنة</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="section container">
+        <div class="card">
+          <h2 class="card-title">عن SmartInvest</h2>
+          <p>
+            أداة بسيطة وذكية لمتابعة نمو استثماراتك مع الوقت. يمكنك تعديل المدخلات فورًا ورؤية الأثر على الرسم البياني.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">© <span id="year"></span> SmartInvest Calculator</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+  </html>
+
+
