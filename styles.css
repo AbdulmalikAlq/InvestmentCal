@@ -98,6 +98,8 @@ body {
 .table-wrapper { overflow: auto; }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: center; padding: 8px; border-top: 1px solid var(--border); }
+th { font-weight: 600; background: var(--bg); }
+tbody tr:hover { background: rgba(0, 129, 167, 0.05); }
 thead th { background: var(--c-cream); }
 
 .site-footer { margin-top: 40px; padding: 16px 0; border-top: 1px solid var(--border); background: white; color: var(--muted); }

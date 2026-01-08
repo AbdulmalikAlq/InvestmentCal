@@ -235,6 +235,9 @@ function renderYearlyTable({ series, months, currency, type, totalContrib, total
 
   const rows = [];
   const years = Math.ceil(months / 12);
+  let prevBalance = 0;
+  let prevDivs = 0;
+
   for (let y = 1; y <= years; y++) {
     const mIdx = Math.min(y * 12, months);
     // احصل على الرصيد عند نهاية كل سنة (أقرب قيمة <= mIdx)
@@ -244,19 +247,33 @@ function renderYearlyTable({ series, months, currency, type, totalContrib, total
     }
     const bal = balPoint.y;
     const contrib = (Number(els.initial.value) || 0) + (Number(els.monthly.value) || 0) * mIdx;
+    
+    // احسب التوزيعات السنوية (الفرق بين السنة الحالية والسابقة)
+    let yearDivs = 0;
+    if (type === 'dividend') {
+      const totalDivsUpTo = estimateDivsUpTo(mIdx);
+      yearDivs = totalDivsUpTo - prevDivs;
+      prevDivs = totalDivsUpTo;
+    }
+
+    // احسب الأرباح (الرصيد الحالي - الإيداعات)
+    const profit = bal - contrib;
+    
     const row = {
       year: y,
       contrib,
-      divs: type === 'dividend' ? estimateDivsUpTo(mIdx) : 0,
+      yearDivs,
       balance: bal,
+      profit,
     };
     rows.push(row);
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${row.year}</td>
       <td>${formatCurrency(row.contrib, currency)}</td>
-      <td class="dividend-only ${type === 'dividend' ? '' : 'hidden'}">${type === 'dividend' ? formatCurrency(row.divs, currency) : '-'}</td>
+      <td class="dividend-only ${type === 'dividend' ? '' : 'hidden'}">${type === 'dividend' ? formatCurrency(row.yearDivs, currency) : '-'}</td>
       <td>${formatCurrency(row.balance, currency)}</td>
+      <td style="color: ${profit >= 0 ? '#059669' : '#dc2626'}; font-weight: 600;">${formatCurrency(profit, currency)}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -287,12 +304,12 @@ function estimateDivsUpTo(months) {
 }
 
 function exportRowsCsv(rows, type) {
-  const head = ['year', 'total_contributions'].concat(type === 'dividend' ? ['dividends'] : []).concat(['year_end_balance']);
+  const head = ['year', 'total_contributions'].concat(type === 'dividend' ? ['year_dividends'] : []).concat(['year_end_balance', 'profit_loss']);
   const lines = [head.join(',')];
   for (const r of rows) {
-    const parts = [r.year, r.contrib];
-    if (type === 'dividend') parts.push(r.divs);
-    parts.push(r.balance);
+    const parts = [r.year, Math.round(r.contrib)];
+    if (type === 'dividend') parts.push(Math.round(r.yearDivs));
+    parts.push(Math.round(r.balance), Math.round(r.profit));
     lines.push(parts.join(','));
   }
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
